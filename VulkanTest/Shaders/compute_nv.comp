@@ -1,0 +1,36 @@
+#version 450
+#pragma use_vulkan_memory_model
+
+#extension GL_KHR_memory_scope_semantics : enable
+#extension GL_KHR_cooperative_matrix : enable
+#extension GL_EXT_shader_explicit_arithmetic_types : enable
+
+layout(binding = 0, set = 0) readonly buffer InputData1 {
+    uint32_t data[];
+} inputData1;
+
+layout(binding = 1, set = 0) readonly buffer InputData2 {
+    uint32_t data[];
+} inputData2;
+
+layout(binding = 2, set = 0) writeonly buffer OutputResult {
+    uint data[];
+} outputResult;
+
+layout(constant_id = 0) const uint M = 0;
+layout(constant_id = 1) const uint N = 0;
+layout(constant_id = 2) const uint K = 0;
+
+layout(local_size_x = 32, local_size_y = 1, local_size_z = 1) in;
+void main() {
+    coopmat<uint8_t, gl_ScopeSubgroup, M, K, gl_MatrixUseA> matA;
+    coopmat<uint8_t, gl_ScopeSubgroup, K, N, gl_MatrixUseB> matB;
+    coopMatLoad(matA, inputData1.data, 0, M / 4, gl_CooperativeMatrixLayoutColumnMajor);
+    coopMatLoad(matB, inputData2.data, 0, K / 4, gl_CooperativeMatrixLayoutColumnMajor);
+
+    coopmat<uint32_t, gl_ScopeSubgroup, M, N, gl_MatrixUseAccumulator> result =
+        coopmat<uint32_t, gl_ScopeSubgroup, M, N, gl_MatrixUseAccumulator>(0);
+    result = coopMatMulAdd(matA, matB, result);
+
+    coopMatStore(result, outputResult.data, 0, M, gl_CooperativeMatrixLayoutColumnMajor);
+}
