@@ -180,8 +180,8 @@ int main() {
     vkCmdDispatch(commandBuffer, 1, 1, 1);
 
     RecordBufferBarrier(
-        commandBuffer, outputBuffer.GetVkBuffer(), VK_PIPELINE_STAGE_TRANSFER_BIT,
-        VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT,
+        commandBuffer, outputBuffer.GetVkBuffer(), VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+        VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT,
         VK_ACCESS_SHADER_READ_BIT, outputBuffer.GetSize());
 
     bufferCopy.size = outputBuffer.GetSize();
